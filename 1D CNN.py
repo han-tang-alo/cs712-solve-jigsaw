@@ -13,7 +13,7 @@ else:
     device = torch.device("cpu")   # Use CPU
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-e", "--epochs", type=int, help="Number of epochs", default = 275)
+parser.add_argument("-e", "--epochs", type=int, help="Number of epochs", default = 100)
 parser.add_argument("-b", "--batch", type=int, help="Batch size", default = 1)
 
 # Parse the arguments
@@ -64,7 +64,7 @@ class jigsawModel1D(nn.Module):
     def __init__(self, num_classes):
         super(jigsawModel1D, self).__init__()
         # Define the 1D convolutional layer
-        self.conv1d = nn.Conv1d(in_channels=36, out_channels=32, kernel_size=3)
+        self.conv1d = nn.Conv1d(in_channels=36, out_channels=64, kernel_size=3)
         # Add conv2d to increase number of features
         # self.conv2d = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3)
         # Define the fully connected layer
