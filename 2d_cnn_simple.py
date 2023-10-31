@@ -60,33 +60,33 @@ dataset = JigsawDataset(data, labels)
 train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
 # Define the jigsawModel class
-class jigsawModel1D(nn.Module):
-    def __init__(self, num_classes):
-        super(jigsawModel1D, self).__init__()
-        # Define the 1D convolutional layer
-        self.conv1d = nn.Conv1d(in_channels=36, out_channels=64, kernel_size=3)
-        # Add conv2d to increase number of features
-        # self.conv2d = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3)
-        # Define the fully connected layer
-        self.fc = nn.Linear(64, num_classes)
-        # Define the activation function
+# Define the jigsawModel class
+class jigsawModel2D(nn.Module):
+    def __init__(self, output_size):
+        super(jigsawModel2D, self).__init__()
+        # Define the 2D convolutional layer
+        self.conv1 = nn.Conv2d(36, 64, kernel_size=10, padding=1)
+        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
+        # self.conv2 = nn.Conv2d(128, 64, kernel_size=10, padding=1)
+        
+        # Fully connected layers
+        self.fc1 = nn.Linear(21504, 256)
+        self.fc2 = nn.Linear(256, output_size)
+    
         self.relu = nn.ReLU()
 
     def forward(self, x):
-        # Apply the 1D convolutional layer
-        x = self.conv1d(x)
-        # x = self.relu(x)
-        # x = self.conv2d(x)
-        x = self.relu(x)
-        # Global average pooling to aggregate features
-        x = x.mean(dim=2)
-        # Apply the fully connected layer
-        x = self.fc(x)
+        x = x.view(1,36, 32, 64)
+        x = self.pool(torch.relu(self.conv1(x)))
+        # x = self.pool(torch.relu(self.conv2(x)))
+        x = x.view(x.size(0), -1)  # Flatten the tensor
+        x = torch.relu(self.fc1(x))
+        x = self.fc2(x)
         return x
 
 
 # Create the model
-model = jigsawModel1D(num_classes)
+model = jigsawModel2D(num_classes)
 # Move the model to the device (CPU or GPU)
 model.to(device)
 # Define the optimizer
@@ -175,4 +175,4 @@ validation_dataset = JigsawValidationDataset(validation_data)
 validation_loader = DataLoader(validation_dataset, batch_size=batch_size, shuffle=False)
 
 # Evaluate the model and save the results to a txt file
-evaluate_model(model, validation_loader, "1d_cnn_pre_b1_alo100.txt")
+evaluate_model(model, validation_loader, "2d_cnn_simple.txt")

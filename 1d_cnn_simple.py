@@ -5,7 +5,6 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 import argparse
-from Network import Network as network
 
 # Check if GPU is available
 if torch.cuda.is_available():
@@ -14,7 +13,7 @@ else:
     device = torch.device("cpu")   # Use CPU
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-e", "--epochs", type=int, help="Number of epochs", default = 275)
+parser.add_argument("-e", "--epochs", type=int, help="Number of epochs", default = 100)
 parser.add_argument("-b", "--batch", type=int, help="Batch size", default = 1)
 
 # Parse the arguments
@@ -60,9 +59,32 @@ dataset = JigsawDataset(data, labels)
 # Ensure shuffle = False when evaluating on validation and test
 train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
+# Define the jigsawModel class
+class jigsawModel1D(nn.Module):
+    def __init__(self, num_classes):
+        super(jigsawModel1D, self).__init__()
+        # Define the 1D convolutional layer
+        self.conv1d = nn.Conv1d(in_channels=36, out_channels=512, kernel_size=3)
+        # Define the fully connected layer
+        self.fc = nn.Linear(512, num_classes)
+        # Define the activation function
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        # Apply the 1D convolutional layer
+        x = self.conv1d(x)
+        # x = self.relu(x)
+        # x = self.conv2d(x)
+        x = self.relu(x)
+        # Global average pooling to aggregate features
+        x = x.mean(dim=2)
+        # Apply the fully connected layer
+        x = self.fc(x)
+        return x
+
 
 # Create the model
-model = network(num_classes)
+model = jigsawModel1D(num_classes)
 # Move the model to the device (CPU or GPU)
 model.to(device)
 # Define the optimizer
@@ -151,4 +173,4 @@ validation_dataset = JigsawValidationDataset(validation_data)
 validation_loader = DataLoader(validation_dataset, batch_size=batch_size, shuffle=False)
 
 # Evaluate the model and save the results to a txt file
-evaluate_model(model, validation_loader, "1d_cnn_pre_b1_e275.txt")
+evaluate_model(model, validation_loader, "1d_cnn_simple.txt")
